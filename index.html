@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#DC2626">
+    <title>Fast - Commander en 1 clic</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+```
+    :root {
+        --red: #DC2626;
+        --orange: #F59E0B;
+        --yellow: #FBBF24;
+        --green: #10B981;
+        --gray: #6B7280;
+        --bg-light: #FFF8F0;
+        --bg-dark: #1A1A1A;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        overflow-x: hidden;
+        transition: all 0.3s ease;
+    }
+
+    body.light-mode {
+        background: var(--bg-light);
+        color: #1F2937;
+    }
+
+    body.dark-mode {
+        background: var(--bg-dark);
+        color: white;
+    }
+
+    /* Food Decorations */
+    .food-decoration {
+        position: fixed;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.1;
+        font-size: 50px;
+        animation: float 8s infinite ease-in-out;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-30px) rotate(10deg); }
+    }
+
+    .food-decoration:nth-child(1) { top: 8%; left: 3%; animation-delay: 0s; }
+    .food-decoration:nth-child(2) { top: 25%; right: 8%; animation-delay: 1.5s; }
+    .food-decoration:nth-child(3) { top: 45%; left: 5%; animation-delay: 3s; }
+    .food-decoration:nth-child(4) { top: 65%; right: 10%; animation-delay: 4.5s; }
+    .food-decoration:nth-child(5) { top: 85%; left: 15%; animation-delay: 6s; }
+    .food-decoration:nth-child(6) { bottom: 10%; right: 5%; animation-delay: 7.5s; }
+
+    .app-container {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        padding-bottom: 80px;
+    }
+
+    /* ONBOARDING */
+    .onboarding {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .onboarding-screen {
+        text-align: center;
+        padding: 40px;
+        max-width: 400px;
+    }
+
+    .onboarding-icon {
+        font-size: 100px;
+        margin-bottom: 30px;
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .onboarding-title {
+        font-size: 32px;
+        font-weight: 900;
+        margin-bottom: 20px;
+    }
+
+    .onboarding-text {
+        font-size: 18px;
+        margin-bottom: 40px;
+        opacity: 0.9;
+    }
+
+    .onboarding-btn {
+        background: white;
+        color: var(--red);
+        border: none;
+        padding: 18px 50px;
+        border-radius: 50px;
+        font-size: 18px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .skip-btn {
+        margin-top: 20px;
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+
+    /* HERO SECTION */
+    .hero {
+        background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
+        padding: 40px 20px;
+        text-align: center;
+        color: white;
+    }
+
+    .hero-title {
+        font-size: 28px;
+        font-weight: 900;
+        margin-bottom: 15px;
+        line-height: 1.3;
+    }
+
+    .hero-subtitle {
+        font-size: 18px;
+        margin-bottom: 30px;
+        opacity: 0.9;
+    }
+
+    .hero-cta {
+        background: white;
+        color: var(--red);
+        border: none;
+        padding: 20px 60px;
+        border-radius: 50px;
+        font-size: 20px;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    /* ORDER MODE SELECTION */
+    .order-mode-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.9);
+        z-index: 3000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .order-mode-content {
+        background: white;
+        border-radius: 30px;
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .dark-mode .order-mode-content {
+        background: #262626;
+        color: white;
+    }
+
+    .order-mode-title {
+        font-size: 28px;
+        font-weight: 900;
+        margin-bottom: 30px;
+        color: var(--red);
+    }
+
+    .dark-mode .order-mode-title {
+        color: var(--orange);
+    }
+
+    .order-mode-option {
+        background: var(--bg-light);
+        border: 3px solid transparent;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .dark-mode .order-mode-option {
+        background: #1F1F1F;
+    }
+
+    .order-mode-option:active {
+        transform: scale(0.98);
+    }
+
+    .order-mode-option.selected {
+        border-color: var(--red);
+        background: rgba(220, 38, 38, 0.1);
+    }
+
+    .order-mode-icon {
+        font-size: 60px;
+        margin-bottom: 15px;
+    }
+
+    .order-mode-name {
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .order-mode-desc {
+        font-size: 14px;
+        color: var(--gray);
+    }
+
+    /* CATEGORIES */
+    .categories-section {
+        padding: 30px 20px;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 900;
+        margin-bottom: 20px;
+    }
+
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .category-card {
+        background: white;
+        border: 2px solid #F3F4F6;
+        border-radius: 20px;
+        padding: 30px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .dark-mode .category-card {
+        background: #262626;
+        border-color: #404040;
+    }
+
+    .category-card:active {
+        transform: scale(0.95);
+    }
+
+    .category-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+    }
+
+    .category-name {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    /* RESTAURANT CARD */
+    .restaurants-section {
+        padding: 0 20px 20px;
+    }
+
+    .restaurant-card {
+        background: white;
+        border: 2px solid #F3F4F6;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .dark-mode .restaurant-card {
+        background: #262626;
+        border-color: #404040;
+    }
+
+    .restaurant-card:active {
+        transform: scale(0.98);
+    }
+
+    .badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 800;
+        z-index: 10;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .badge-fast {
+        background: var(--red);
+        color: white;
+    }
+
+    .badge-visited {
+        background: var(--green);
+        color: white;
+    }
+
+    .badge-top {
+        background: var(--yellow);
+        color: #1F2937;
+    }
+
+    .restaurant-image {
+        height: 200px;
+        background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 80px;
+        position: relative;
+    }
+
+    .restaurant-info {
+        padding: 20px;
+    }
+
+    .restaurant-name {
+        font-size: 22px;
+        font-weight: 900;
+        margin-bottom: 8px;
+    }
+
+    .restaurant-stats {
+        display: flex;
+        gap: 20px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+
+    .stat {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .stat.primary {
+        color: var(--red);
+    }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid #E5E7EB;
+        display: flex;
+        justify-content: space-around;
+        padding: 12px 0;
+        z-index: 1000;
+    }
+
+    .dark-mode .bottom-nav {
+        background: rgba(38,38,38,0.95);
+        border-top-color: #404040;
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        color: var(--gray);
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 8px 25px;
+        min-width: 70px;
+    }
+
+    .nav-item.active {
+        color: var(--red);
+    }
+
+    .nav-icon {
+        font-size: 26px;
+    }
+
+    /* CART FLOATING */
+    .cart-floating {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        background: var(--red);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+        cursor: pointer;
+        z-index: 999;
+        animation: bounce-cart 3s infinite;
+    }
+
+    @keyframes bounce-cart {
+        0%, 100% { transform: translateY(0); }
+        10%, 30% { transform: translateY(-10px); }
+        20% { transform: translateY(0); }
+    }
+
+    .cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--yellow);
+        color: #1F2937;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    /* MODAL */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.95);
+        z-index: 4000;
+        overflow-y: auto;
+    }
+
+    .modal.active {
+        display: block;
+    }
+
+    .modal-content {
+        background: var(--bg-light);
+        margin: 20px;
+        border-radius: 30px;
+        max-width: 600px;
+        margin: 40px auto;
+    }
+
+    .dark-mode .modal-content {
+        background: #1F1F1F;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
+        padding: 40px 30px;
+        text-align: center;
+        color: white;
+        border-radius: 30px 30px 0 0;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .menu-item {
+        background: white;
+        border: 2px solid #F3F4F6;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .dark-mode .menu-item {
+        background: #262626;
+        border-color: #404040;
+    }
+
+    .menu-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .menu-item-name {
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .menu-item-price {
+        font-size: 24px;
+        font-weight: 900;
+        color: var(--red);
+    }
+
+    .menu-item-desc {
+        color: var(--gray);
+        margin-bottom: 15px;
+    }
+
+    .add-btn {
+        background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
+        border: none;
+        padding: 15px 30px;
+        border-radius: 15px;
+        color: white;
+        font-weight: 800;
+        font-size: 16px;
+        width: 100%;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+    }
+
+    .add-btn:active {
+        transform: scale(0.98);
+    }
+
+    .close-btn {
+        background: rgba(107, 114, 128, 0.2);
+        border: none;
+        padding: 18px;
+        border-radius: 15px;
+        font-weight: 800;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 20px;
+        cursor: pointer;
+    }
+
+    /* ORDER STATUS */
+    .order-status {
+        background: white;
+        border: 2px solid #F3F4F6;
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px;
+    }
+
+    .dark-mode .order-status {
+        background: #262626;
+        border-color: #404040;
+    }
+
+    .status-step {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        align-items: center;
+    }
+
+    .status-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .status-icon.active {
+        background: var(--green);
+    }
+
+    .status-icon.pending {
+        background: #E5E7EB;
+    }
+
+    .dark-mode .status-icon.pending {
+        background: #404040;
+    }
+
+    .qr-code {
+        text-align: center;
+        padding: 40px;
+        background: white;
+        border-radius: 20px;
+        margin: 20px;
+    }
+
+    .dark-mode .qr-code {
+        background: #262626;
+    }
+
+    .qr-placeholder {
+        width: 200px;
+        height: 200px;
+        background: white;
+        margin: 0 auto 20px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 100px;
+        border: 5px solid var(--red);
+    }
+
+    .progress-bar {
+        background: #E5E7EB;
+        height: 8px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 20px 0;
+    }
+
+    .dark-mode .progress-bar {
+        background: #404040;
+    }
+
+    .progress-fill {
+        background: linear-gradient(135deg, var(--green) 0%, #34D399 100%);
+        height: 100%;
+        transition: width 1s ease;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+```
+
+</head>
+<body class="light-mode">
+    <!-- Food Decorations -->
+    <div class="food-decoration">🍔</div>
+    <div class="food-decoration">🍕</div>
+    <div class="food-decoration">🍟</div>
+    <div class="food-decoration">🍜</div>
+    <div class="food-decoration">🌮</div>
+    <div class="food-decoration">🍗</div>
+
+```
+<!-- ONBOARDING -->
+<div id="onboarding" class="onboarding">
+    <div class="onboarding-screen" id="onboardingScreen1">
+        <div class="onboarding-icon">🍔</div>
+        <div class="onboarding-title">Choisissez un fast-food</div>
+        <div class="onboarding-text">Tous les fast-foods autour de vous en un clic</div>
+        <button class="onboarding-btn" onclick="nextOnboarding(2)">Suivant</button>
+        <button class="onboarding-btn skip-btn" onclick="skipOnboarding()">Passer</button>
+    </div>
+    <div class="onboarding-screen hidden" id="onboardingScreen2">
+        <div class="onboarding-icon">⏱️</div>
+        <div class="onboarding-title">Commandez à l'avance</div>
+        <div class="onboarding-text">Votre plat sera prêt à votre arrivée</div>
+        <button class="onboarding-btn" onclick="nextOnboarding(3)">Suivant</button>
+        <button class="onboarding-btn skip-btn" onclick="skipOnboarding()">Passer</button>
+    </div>
+    <div class="onboarding-screen hidden" id="onboardingScreen3">
+        <div class="onboarding-icon">📱</div>
+        <div class="onboarding-title">Arrivez, scannez, mangez</div>
+        <div class="onboarding-text">Montrez votre QR code et récupérez votre commande</div>
+        <button class="onboarding-btn" onclick="skipOnboarding()">C'est parti ! 🚀</button>
+    </div>
+</div>
+
+<!-- ORDER MODE MODAL -->
+<div id="orderModeModal" class="order-mode-modal hidden">
+    <div class="order-mode-content">
+        <h2 class="order-mode-title">Comment souhaitez-vous commander ?</h2>
+        <div class="order-mode-option" onclick="selectMode('sur-place')">
+            <div class="order-mode-icon">🍽️</div>
+            <div class="order-mode-name">Sur place</div>
+            <div class="order-mode-desc">Commandez maintenant, récupérez avec un QR code</div>
+        </div>
+        <div class="order-mode-option" onclick="selectMode('emporter')">
+            <div class="order-mode-icon">🥡</div>
+            <div class="order-mode-name">À emporter</div>
+            <div class="order-mode-desc">Choisissez votre heure de retrait</div>
+        </div>
+    </div>
+</div>
+
+<!-- APP CONTAINER -->
+<div class="app-container">
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-title">Tous les fast-foods autour de vous.<br>En un clic.</div>
+        <div class="hero-subtitle">Commandez à l'avance, récupérez sans attendre</div>
+        <button class="hero-cta" onclick="showOrderMode()">🍔 Commander maintenant</button>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="categories-section">
+        <h2 class="section-title">Catégories</h2>
+        <div class="categories-grid">
+            <div class="category-card" onclick="filterCategory('burger')">
+                <div class="category-icon">🍔</div>
+                <div class="category-name">Burgers</div>
+            </div>
+            <div class="category-card" onclick="filterCategory('pizza')">
+                <div class="category-icon">🍕</div>
+                <div class="category-name">Pizza</div>
+            </div>
+            <div class="category-card" onclick="filterCategory('kebab')">
+                <div class="category-icon">🌯</div>
+                <div class="category-name">Tacos</div>
+            </div>
+            <div class="category-card" onclick="filterCategory('poulet')">
+                <div class="category-icon">🍗</div>
+                <div class="category-name">Poulet</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESTAURANTS -->
+    <div class="restaurants-section">
+        <h2 class="section-title">Restaurants à proximité</h2>
+        <div id="restaurantsList"></div>
+    </div>
+</div>
+
+<!-- CART FLOATING -->
+<div class="cart-floating hidden" id="cartFloating" onclick="showCart()">
+    🛒
+    <div class="cart-badge" id="cartCount">0</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item active">
+        <div class="nav-icon">🏠</div>
+        <span>Accueil</span>
+    </div>
+    <div class="nav-item">
+        <div class="nav-icon">🔍</div>
+        <span>Rechercher</span>
+    </div>
+    <div class="nav-item" onclick="showOrders()">
+        <div class="nav-icon">📦</div>
+        <span>Commandes</span>
+    </div>
+    <div class="nav-item">
+        <div class="nav-icon">❤️</div>
+        <span>Favoris</span>
+    </div>
+    <div class="nav-item">
+        <div class="nav-icon">👤</div>
+        <span>Profil</span>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="restaurantModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div style="font-size: 32px; font-weight: 900;" id="modalTitle"></div>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    const restaurants = [
+        {id: 1, name: "Burger King Premium", emoji: "🍔", category: "burger", rating: 4.9, reviews: 678, prepTime: 8, avgPrice: 12, visited: true, popular: 95, distance: 0.3, menu: [{name: "Whopper Deluxe", desc: "Double steak, cheddar, bacon", price: 12}, {name: "King Chicken", desc: "Poulet croustillant", price: 10}]},
+        {id: 2, name: "Pizza Bella", emoji: "🍕", category: "pizza", rating: 4.8, reviews: 512, prepTime: 12, avgPrice: 14, visited: false, popular: 88, distance: 0.5, menu: [{name: "Margherita", desc: "Tomate, mozzarella, basilic", price: 10}, {name: "4 Fromages", desc: "Mozzarella, gorgonzola, chèvre", price: 13}]},
+        {id: 3, name: "Tacos Express", emoji: "🌯", category: "kebab", rating: 4.7, reviews: 445, prepTime: 6, avgPrice: 9, visited: true, popular: 92, distance: 0.2, menu: [{name: "Tacos 3 Viandes", desc: "Poulet, kebab, merguez", price: 9}, {name: "Tacos XL", desc: "5 viandes, sauce fromagère", price: 12}]},
+        {id: 4, name: "Chicken House", emoji: "🍗", category: "poulet", rating: 4.6, reviews: 389, prepTime: 10, avgPrice: 11, visited: false, popular: 85, distance: 0.7, menu: [{name: "Bucket 8 pièces", desc: "8 morceaux croustillants", price: 15}, {name: "Wings 12p", desc: "Ailes épicées", price: 12}]}
+    ];
+
+    let cart = [];
+    let selectedMode = null;
+    let userLocation = null;
+    let currentCategory = 'all';
+
+    // Auto theme
+    function setAutoTheme() {
+        const hour = new Date().getHours();
+        const isDark = hour < 7 || hour >= 19;
+        document.body.className = isDark ? 'dark-mode' : 'light-mode';
+    }
+
+    // Onboarding
+    function nextOnboarding(screen) {
+        document.querySelectorAll('.onboarding-screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById('onboardingScreen' + screen).classList.remove('hidden');
+    }
+
+    function skipOnboarding() {
+        document.getElementById('onboarding').style.display = 'none';
+        localStorage.setItem('fastOnboarded', 'true');
+    }
+
+    // Order Mode
+    function showOrderMode() {
+        document.getElementById('orderModeModal').classList.remove('hidden');
+    }
+
+    function selectMode(mode) {
+        selectedMode = mode;
+        document.getElementById('orderModeModal').classList.add('hidden');
+        alert(`Mode sélectionné : ${mode === 'sur-place' ? 'Sur place 🍽️' : 'À emporter 🥡'}`);
+        displayRestaurants();
+    }
+
+    // Display Restaurants
+    function displayRestaurants() {
+        const container = document.getElementById('restaurantsList');
+        let filtered = currentCategory === 'all' ? restaurants : restaurants.filter(r => r.category === currentCategory);
+        
+        container.innerHTML = filtered.map(r => `
+            <div class="restaurant-card" onclick="openRestaurant(${r.id})">
+                ${r.prepTime <= 8 ? '<div class="badge badge-fast">⚡ LE PLUS RAPIDE</div>' : ''}
+                ${r.visited ? '<div class="badge badge-visited" style="top: 15px; left: auto; right: 15px;">✓ Déjà commandé</div>' : ''}
+                ${r.popular >= 90 ? '<div class="badge badge-top" style="top: 60px; left: 15px;">🏆 Top ${r.popular}%</div>' : ''}
+                <div class="restaurant-image">${r.emoji}</div>
+                <div class="restaurant-info">
+                    <div class="restaurant-name">${r.name}</div>
+                    <div class="restaurant-stats">
+                        <div class="stat">⭐ ${r.rating} (${r.reviews})</div>
+                        <div class="stat primary">${r.distance} km</div>
+                        <div class="stat primary">⏱ ${r.prepTime} min</div>
+                        <div class="stat">💰 ~${r.avgPrice}€</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterCategory(cat) {
+        currentCategory = cat;
+        displayRestaurants();
+    }
+
+    // Open Restaurant
+    function openRestaurant(id) {
+        const resto = restaurants.find(r => r.id === id);
+        document.getElementById('modalTitle').textContent = resto.emoji + ' ' + resto.name;
+        document.getElementById('modalBody').innerHTML = `
+            <div style="background: ${resto.visited ? 'rgba(16, 185, 129, 0.1)' : 'rgba(251, 191, 36, 0.1)'}; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: center; font-weight: 800;">
+                ${resto.visited ? '✓ Vous êtes déjà venu ici !' : '⭐ Nouveau pour vous !'}
+            </div>
+            ${resto.popular >= 90 ? `<div style="background: rgba(251, 191, 36, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: center; font-weight: 700;">
+                🔥 ${resto.popular}% des clients prennent ces plats
+            </div>` : ''}
+            <h3 style="font-size: 22px; font-weight: 900; margin-bottom: 20px;">Menu</h3>
+            ${resto.menu.map(item => `
+                <div class="menu-item">
+                    <div class="menu-item-header">
+                        <div>
+                            <div class="menu-item-name">${item.name}</div>
+                            <div class="menu-item-desc">${item.desc}</div>
+                        </div>
+                        <div class="menu-item-price">${item.price}€</div>
+                    </div>
+                    <button class="add-btn" onclick="addToCart(${resto.id}, '${item.name}', ${item.price})">
+                        Ajouter au panier
+                    </button>
+                </div>
+            `).join('')}
+            <button class="close-btn" onclick="closeModal()">Retour</button>
+        `;
+        document.getElementById('restaurantModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('restaurantModal').classList.remove('active');
+    }
+
+    // Cart
+    function addToCart(restoId, itemName, price) {
+        cart.push({restoId, itemName, price});
+        updateCart();
+        
+        // Feedback animation & sound
+        const btn = event.target;
+        btn.textContent = '✓ Ajouté !';
+        btn.style.background = 'linear-gradient(135deg, #10B981 0%, #34D399 100%)';
+        
+        // Vibration
+        if (navigator.vibrate) navigator.vibrate(50);
+        
+        setTimeout(() => {
+            btn.textContent = 'Ajouter au panier';
+            btn.style.background = '';
+        }, 1500);
+    }
+
+    function updateCart() {
+        const count = cart.length;
+        document.getElementById('cartCount').textContent = count;
+        document.getElementById('cartFloating').classList.toggle('hidden', count === 0);
+    }
+
+    function showCart() {
+        if (cart.length === 0) return;
+        
+        const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+        const total = subtotal + 1; // Service fee
+        
+        document.getElementById('modalTitle').textContent = '🛒 Votre panier';
+        document.getElementById('modalBody').innerHTML = `
+            <div style="background: white; border: 2px solid #F3F4F6; border-radius: 20px; padding: 20px; margin-bottom: 20px;" class="dark-mode-cart">
+                ${cart.map(item => `
+                    <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                        <span>${item.itemName}</span>
+                        <span style="font-weight: 800;">${item.price}€</span>
+                    </div>
+                `).join('')}
+                <div style="border-top: 2px solid #F3F4F6; margin-top: 15px; padding-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                        <span>Sous-total</span>
+                        <span style="font-weight: 700;">${subtotal}€</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                        <span>Frais Fast</span>
+                        <span style="font-weight: 700;">+1€</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 24px; font-weight: 900; color: var(--red);">
+                        <span>Total</span>
+                        <span>${total}€</span>
+                    </div>
+                </div>
+            </div>
+            <button class="add-btn" onclick="confirmOrder()">
+                Confirmer la commande ${total}€
+            </button>
+            <button class="close-btn" onclick="closeModal()">Retour</button>
+        `;
+        document.getElementById('restaurantModal').classList.add('active');
+    }
+
+    // Order Confirmation
+    function confirmOrder() {
+        const resto = restaurants.find(r => r.id === cart[0].restoId);
+        const estimatedTime = new Date(Date.now() + resto.prepTime * 60000);
+        const timeStr = estimatedTime.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+        
+        document.getElementById('modalTitle').textContent = '✅ Commande confirmée !';
+        document.getElementById('modalBody').innerHTML = `
+            ${selectedMode === 'sur-place' ? `
+                <div class="qr-code">
+                    <h3 style="font-size: 24px; font-weight: 900; margin-bottom: 20px;">Votre QR Code</h3>
+                    <div class="qr-placeholder">📱</div>
+                    <p style="color: var(--gray);">Montrez ce code au comptoir</p>
+                </div>
+            ` : `
+                <div style="background: white; border: 2px solid #F3F4F6; border-radius: 20px; padding: 30px; text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 60px; margin-bottom: 15px;">⏱️</div>
+                    <h3 style="font-size: 24px; font-weight: 900; margin-bottom: 10px;">Prêt à ${timeStr}</h3>
+                    <p style="color: var(--gray);">Votre commande sera prête à cette heure</p>
+                </div>
+            `}
+            
+            <div class="order-status">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 33%"></div>
+                </div>
+                <div class="status-step">
+                    <div class="status-icon active">✓</div>
+                    <div>
+                        <div style="font-weight: 800;">Commande reçue</div>
+                        <div style="color: var(--gray); font-size: 14px;">Restaurant notifié</div>
+                    </div>
+                </div>
+                <div class="status-step">
+                    <div class="status-icon pending">⏳</div>
+                    <div>
+                        <div style="font-weight: 800;">En préparation</div>
+                        <div style="color: var(--gray); font-size: 14px;">Votre plat est en cours</div>
+                    </div>
+                </div>
+                <div class="status-step">
+                    <div class="status-icon pending">🔥</div>
+                    <div>
+                        <div style="font-weight: 800;">Prête à être servie</div>
+                        <div style="color: var(--gray); font-size: 14px;">Arrivez et récupérez</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="close-btn" onclick="finishOrder()">Terminer</button>
+        `;
+        
+        // Animate progress
+        setTimeout(() => {
+            document.getElementById('progressBar').style.width = '66%';
+        }, 2000);
+        setTimeout(() => {
+            document.getElementById('progressBar').style.width = '100%';
+        }, 4000);
+    }
+
+    function finishOrder() {
+        cart = [];
+        updateCart();
+        closeModal();
+        alert('Merci d\'avoir utilisé Fast ! 🚀');
+    }
+
+    function showOrders() {
+        alert('Historique des commandes - À venir !');
+    }
+
+    // Init
+    window.addEventListener('load', () => {
+        setAutoTheme();
+        if (!localStorage.getItem('fastOnboarded')) {
+            // Show onboarding
+        } else {
+            skipOnboarding();
+        }
+        displayRestaurants();
+    });
+</script>
+```
+
+</body>
+</html>
